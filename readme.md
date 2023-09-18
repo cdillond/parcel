@@ -25,7 +25,7 @@ The output takes the form:
     "trackingNum":"1234567891234561234123412348",
     "carrier":"USPS",
     "delivered":true,
-    "deliveryDateTime":"2023-09-15T10:14:00Z", // parcel attempts to format date objects as ISO 8601/RFC 3339 strings but may return a string of an unknown format
+    "deliveryDateTime":"2023-09-15T10:14:00Z", 
     "Updates":[
             {
             "dateTime":"2023-09-15T10:14:00Z",
@@ -37,5 +37,6 @@ The output takes the form:
     }
 
 ```
+`parcel` attempts to format date objects as ISO 8601/RFC 3339 strings, but the `deliveryDateTime` and `dateTime` fields may contain strings of an undetermined format if `parcel` is unable to parse the response from the source API.
 
 

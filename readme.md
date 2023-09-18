@@ -34,7 +34,7 @@ The output takes the form:
             },
             ...
         ]
-    }
+}
 
 ```
 `parcel` attempts to format date objects as ISO 8601/RFC 3339 strings, but the `deliveryDateTime` and `dateTime` fields may contain strings of an undetermined format if `parcel` is unable to parse the response from the source API.

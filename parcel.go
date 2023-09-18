@@ -52,9 +52,10 @@ var (
 )
 
 var (
-	n = flag.String("n", "", "tracking number [required]")
-	c = flag.String("c", "", "carrier [required]")
-	o = flag.String("o", "<stdout>", "path to output file")
+	n      = flag.String("n", "", "tracking number [required]")
+	c      = flag.String("c", "", "carrier [required]")
+	o      = flag.String("o", "<stdout>", "path to output file")
+	pretty = flag.Bool("pretty", false, "print the output json with indented fields")
 )
 
 func main() {
@@ -101,14 +102,25 @@ func main() {
 		log.Println("tracking number updates not found")
 	}
 
+	b := make([]byte, 0, 1024)
+	switch *pretty {
+	case true:
+		b, err = json.MarshalIndent(res, "", "\t")
+	case false:
+		b, err = json.Marshal(res)
+	}
+	if err != nil {
+		log.Fatalln(err.Error())
+	}
+	b = append(b, '\n')
+
 	out, err := OutFile(*o)
 	if err != nil {
 		log.Fatalln(err.Error())
 	}
 
-	enc := json.NewEncoder(out)
-
-	if err = enc.Encode(res); err != nil {
+	_, err = out.Write(b)
+	if err != nil {
 		out.Close()
 		log.Fatalln(err.Error())
 	}

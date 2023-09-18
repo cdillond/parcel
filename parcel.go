@@ -18,11 +18,11 @@ import (
 )
 
 type Result struct {
-	TrackingNum      string  `json:"trackingNum"`
-	Carrier          Carrier `json:"carrier"`
-	Delivered        bool    `json:"delivered"`
-	DeliveryDateTime string  `json:"deliveryDateTime"` // parcel attempts to format the response as ISO 8601/RFC 3339 but this may be a dateTime string of an unknown format
-	Updates          []Update
+	TrackingNum      string   `json:"trackingNum"`
+	Carrier          Carrier  `json:"carrier"`
+	Delivered        bool     `json:"delivered"`
+	DeliveryDateTime string   `json:"deliveryDateTime"` // parcel attempts to format the response as ISO 8601/RFC 3339 but this may be a dateTime string of an unknown format
+	Updates          []Update `json:"updates"`
 }
 
 type Update struct {

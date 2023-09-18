@@ -26,7 +26,7 @@ The output takes the form:
     "carrier":"USPS",
     "delivered":true,
     "deliveryDateTime":"2023-09-15T10:14:00Z", 
-    "Updates":[
+    "updates":[
             {
             "dateTime":"2023-09-15T10:14:00Z",
             "location":"Brooklyn, NY, United States",

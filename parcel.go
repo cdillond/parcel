@@ -11,6 +11,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -45,6 +46,8 @@ const (
 	USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36"
 )
 
+var TZ = time.Local
+
 var (
 	ErrArgs    = errors.New("too few arguments provided")
 	ErrNum     = errors.New("invalid tracking number")
@@ -56,6 +59,7 @@ var (
 	c      = flag.String("c", "", "carrier [required]")
 	o      = flag.String("o", "<stdout>", "path to output file")
 	pretty = flag.Bool("pretty", false, "print the output json with indented fields")
+	tz     = flag.String("tz", "", "the IANA time zone database location name to use when parsing date objects")
 )
 
 func main() {
@@ -73,6 +77,13 @@ func main() {
 	carrier, err := ValidateCarrier(*c)
 	if err != nil {
 		log.Fatalln(err.Error())
+	}
+
+	if *tz != "" {
+		TZ, err = time.LoadLocation(*tz)
+		if err != nil {
+			log.Fatalln(err.Error())
+		}
 	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
@@ -237,31 +248,30 @@ func ValidateCarrier(s string) (Carrier, error) {
 }
 
 func ParseUpdateDateTime(date, updateTime string) string {
+	now := time.Now()
 	if updateTime == "" {
 		updateTime = "12:00 AM"
 	}
-	dt, err := time.Parse("Jan 2 3:04 PM", date+" "+updateTime)
+	dt, err := time.ParseInLocation("Jan 2 3:04 PM 2006", date+" "+updateTime+" "+strconv.Itoa(now.Year()), TZ)
 	if err != nil {
 		// attempt to parse with year
-		dt, err = time.Parse("Jan 2, 2006 3:04 PM", date+" "+updateTime)
+		dt, err = time.ParseInLocation("Jan 2, 2006 3:04 PM", date+" "+updateTime, TZ)
 		if err != nil {
 			return date + ", " + updateTime
 		}
 		return dt.Format(time.RFC3339)
 	}
-	now := time.Now()
 
 	// Assuming all dates are within the current or preceding year
-	if dt.YearDay() <= now.YearDay() {
-		dt = dt.AddDate(now.Year(), 0, 0)
-	} else {
-		dt = dt.AddDate(now.Year()-1, 0, 0)
+	if now.Before(dt) {
+		dt = dt.AddDate(-1, 0, 0)
 	}
+
 	return dt.Format(time.RFC3339)
 }
 
 func ParseEstimatedDelivery(date string) string {
-	dt, err := time.Parse("Monday, January 2, 2006", date)
+	dt, err := time.ParseInLocation("Monday, January 2, 2006", date, TZ)
 	if err != nil {
 		return date
 	}
@@ -269,19 +279,24 @@ func ParseEstimatedDelivery(date string) string {
 }
 
 func ParseDeliveryDate(date string) string {
-	dt, err := time.Parse("Mon, Jan 2, 3:04 PM", date)
+	now := time.Now()
+
+	// assume current year - this is kind of a hack, but avoids some of the messiness of manually
+	// adding the current year after first parsing the (yearless) delivery date
+	dt, err := time.ParseInLocation("Mon, Jan 02, 3:04 PM 2006", date+" "+strconv.Itoa(now.Year()), TZ)
 	if err != nil {
-		dt, err := time.Parse("Mon, Jan 2, 2006, 3:04 PM", date)
+		// if the first version doesn't work, try a second format
+		dt, err := time.ParseInLocation("Mon, Jan 02, 2006, 3:04 PM", date, TZ)
 		if err != nil {
 			return date
 		}
 		return dt.Format(time.RFC3339)
 	}
-	now := time.Now()
-	if dt.YearDay() > now.YearDay() {
-		dt = dt.AddDate(now.Year()-1, 0, 0)
-	} else {
-		dt = dt.AddDate(now.Year(), 0, 0)
+
+	// if the delivery date is in the future, assume the parcel was delivered in the prior year
+	// ignore the
+	if now.Before(dt) {
+		dt = dt.AddDate(-1, 0, 0)
 	}
 	return dt.Format(time.RFC3339)
 }

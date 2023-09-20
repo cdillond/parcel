@@ -294,7 +294,6 @@ func ParseDeliveryDate(date string) string {
 	}
 
 	// if the delivery date is in the future, assume the parcel was delivered in the prior year
-	// ignore the
 	if now.Before(dt) {
 		dt = dt.AddDate(-1, 0, 0)
 	}

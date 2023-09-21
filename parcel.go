@@ -60,6 +60,7 @@ var (
 	o      = flag.String("o", "<stdout>", "path to output file")
 	pretty = flag.Bool("pretty", false, "print the output json with indented fields")
 	tz     = flag.String("tz", "", "the IANA time zone database location name to use when parsing date objects")
+	g      = flag.Bool("gob", false, "encodes the output as a gob")
 )
 
 func main() {
@@ -111,6 +112,15 @@ func main() {
 	res.Carrier = carrier
 	if len(res.Updates) == 0 {
 		log.Println("tracking number updates not found")
+	}
+
+	// encode as gob and then exit
+	if *g {
+		err = EncodeGob(*o, res)
+		if err != nil {
+			log.Fatalln(err)
+		}
+		return
 	}
 
 	b := make([]byte, 0, 1024)

@@ -7,7 +7,7 @@ You can build `parcel` using Go by running:
 go install github.com/cdillond/parcel@latest
 ```
 ## Usage
-`parcel` takes a tracking number (specified by the `-n` flag) and a carrier (specified by the `-c` flag) as arguments and writes a JSON object to either `stdout` or the path specified by the `-o` option. If an output path is provided, a new file will be created; any existing file that shares the same path will be overwritten. If the `-pretty` option is specified, `parcel` indents the fields in the output JSON. The `-tz` option specifies the name of the location (as defined by the IANA time zone database) for `parcel` to use when parsing date-time data.
+`parcel` takes a tracking number (specified by the `-n` flag) and a carrier (specified by the `-c` flag) as arguments and writes a JSON object to either `stdout` or the path specified by the `-o` option. If an output path is provided, a new file will be created; any existing file that shares the same path will be overwritten. If the `-pretty` option is specified, `parcel` indents the fields in the output JSON. The `-tz` option specifies the name of the location (as defined by the IANA time zone database) for `parcel` to use when parsing date-time data. To encode the output using gob instead of JSON, use the `-gob` flag.
 
 
 Examples:
